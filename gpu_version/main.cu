@@ -86,13 +86,13 @@ __device__ int get_closest_intersection(Sphere* spheres, Ray &r, float* intersec
     } else {
         if(asize != 0) {
             float min_val = 100.0;
-		    for (int ii = 0; ii < asize; ii++) {
+            for (int ii = 0; ii < asize; ii++) {
                 if (intersections[ii] < 0.0) continue;
                 else if (intersections[ii] < min_val) {
                     min_val = intersections[ii];
                     hp = ii;
                 }
-		    }
+            }
         }
     }
     return hp;
@@ -139,7 +139,6 @@ __device__ Color get_color_at(Ray &r, const float &intersection, Light* light, S
     return convert_to_color(shadow * all_light);
 }
 
-//!!!IMPORTANT ONE!!!
 __global__ void cast_ray(Vec3f* fb, Sphere* spheres, Light* light, Vec3f* origin) {
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
     int j = (blockIdx.y * blockDim.y) + threadIdx.y;
@@ -162,7 +161,7 @@ __global__ void cast_ray(Vec3f* fb, Sphere* spheres, Light* light, Vec3f* origin
     }
 }
 
-void initDevice(int& device_handle/*, int& max_threads_per_block*/) {
+void initDevice(int& device_handle) {
     cudaDeviceProp devProp;
     cudaGetDeviceProperties(&devProp, 0);
     printDeviceProps(devProp);
@@ -230,8 +229,6 @@ int main(int, char**) {
     }
     initDevice(device_handle);
 
-    //int obj_count = 3;
-
     Sphere sphere(.25, Vec3f(-0.35, -0.35, -1), Color((float) 235 / 255, (float) 64 / 255, (float) 52 / 255));
     Sphere sphere2(.25, Vec3f(0.35, -0.35, -1), Color((float) 52 / 255, (float) 198 / 255, (float) 235 / 255));
     Sphere sphere3(.25, Vec3f(0, 0.35, -1), Color(0, 1, 0));
@@ -240,9 +237,6 @@ int main(int, char**) {
     Vec3f *origin = new Vec3f(0, 0, 1);
 
     Sphere *spheres = new Sphere[OBJ_COUNT] {sphere, sphere2, sphere3, sphere4};
-    // for(int i = 4; i < OBJ_COUNT; i++) {
-    //     spheres[i] = Sphere(.125, Vec3f((float) (i / 4.0) - 12.5, .5, -10), Color(0, 1, 0));
-    // }
 
     Light *light = new Light(Vec3f(1, 1, 1), Vec3f(1, 1, 1));
     light->set_light(.2, .5, .5);
