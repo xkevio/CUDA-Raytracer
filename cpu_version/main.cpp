@@ -78,13 +78,13 @@ int get_closest_intersection(const std::vector<Sphere> &spheres, Ray &r, std::ve
         return intersections[0] < 0 ? -1 : 0;
     } else {
         float min_val = 100.0;
-		for (int i = 0; i < intersections.size(); i++) {
-			if (intersections[i] < 0.0) continue;
-			else if (intersections[i] < min_val) {
-				min_val = intersections[i];
+        for (int i = 0; i < intersections.size(); i++) {
+            if (intersections[i] < 0.0) continue;
+            else if (intersections[i] < min_val) {
+                min_val = intersections[i];
                 hp = i;
-			}
-		}
+            }
+        }
     }
     return hp;
 }
