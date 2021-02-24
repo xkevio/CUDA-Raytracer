@@ -9,13 +9,13 @@
 #include "Vec3f.h"
 #include "Light.h"
 
-#define WIDTH 2048
-#define HEIGHT 2048
-#define OBJ_COUNT 4
+const int WIDTH = 2048;
+const int HEIGHT = 2048;
+const int OBJ_COUNT = 4;
 
 //const int MAX_THREADS_PER_BLOCK = 1024;
 
-typedef Vec3f Color;
+using Color = Vec3f;
 
 struct Sphere {
     float radius;
