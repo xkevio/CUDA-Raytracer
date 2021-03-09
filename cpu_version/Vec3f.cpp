@@ -3,24 +3,6 @@
 #include <cmath>
 #include <iostream>
 
-Vec3f::Vec3f(float x_, float y_, float z_) {
-    x = x_;
-    y = y_;
-    z = z_;
-}
-
-Vec3f::Vec3f(const Vec3f& a) {
-    x = a.x;
-    y = a.y;
-    z = a.z;
-}
-
-Vec3f::Vec3f() {
-    x = 0;
-    y = 0;
-    z = 0;
-}
-
 Vec3f Vec3f::operator+(const Vec3f& a) const { return Vec3f(x + a.x, y + a.y, z + a.z); }
 
 Vec3f Vec3f::operator-(const Vec3f& a) const { return Vec3f(x - a.x, y - a.y, z - a.z); }

@@ -14,6 +14,7 @@ constexpr int WIDTH = 2048;
 constexpr int HEIGHT = 2048;
 
 using Color = Vec3f;
+using namespace std::chrono;
 
 struct Sphere {
     float radius;
@@ -30,17 +31,17 @@ struct Ray {
 
     Ray(const Vec3f& o, const Vec3f& d) : origin(o), dir(d) {}
 
-    Vec3f at(float t);
-    float has_intersection(const Sphere& sphere);
+    Vec3f at(float t) const;
+    float has_intersection(const Sphere& sphere) const;
 };
 
 Vec3f Sphere::get_normal_at(const Vec3f& at) const { return Vec3f(at - center).normalize(); }
 
-Vec3f Ray::at(float t) { return origin + (t * dir); }
+Vec3f Ray::at(float t) const { return origin + (t * dir); }
 
 float dot(const Vec3f& a, const Vec3f& b) { return a.x_() * b.x_() + a.y_() * b.y_() + a.z_() * b.z_(); }
 
-float Ray::has_intersection(const Sphere& sphere) {
+float Ray::has_intersection(const Sphere& sphere) const {
     auto a = dot(dir, dir);
     auto b = dot((2.0f * (dir)), (origin - sphere.center));
     auto c = dot((origin - sphere.center), (origin - sphere.center)) - pow(sphere.radius, 2);
@@ -57,10 +58,10 @@ float Ray::has_intersection(const Sphere& sphere) {
     return t0 < t1 ? t0 : t1;
 }
 
-int get_closest_intersection(const std::vector<Sphere>& spheres, Ray& r, std::vector<float>& intersections) {
+int get_closest_intersection(const std::vector<Sphere>& spheres, const Ray& r, std::vector<float>& intersections) {
     int hp = -1;
 
-    for (auto& obj : spheres) {
+    for (const auto& obj : spheres) {
         intersections.push_back(r.has_intersection(obj));
     }
 
@@ -86,30 +87,28 @@ Color convert_to_color(const Vec3f& v) {
     return Color(static_cast<int>(1 * ((v.x_()) * 255.999)), static_cast<int>(1 * ((v.y_()) * 255.999)), static_cast<int>(1 * ((v.z_()) * 255.999)));
 }
 
-Color get_color_at(Ray& r, const float& intersection, const Light& light, Sphere& sphere, const std::vector<Sphere>& spheres) {
-    auto t = intersection;
+Color get_color_at(const Ray& r, float intersection, const Light& light, const Sphere& sphere, const std::vector<Sphere>& spheres) {
     float shadow = 1;
 
-    Vec3f normal = sphere.get_normal_at(r.at(t));
+    Vec3f normal = sphere.get_normal_at(r.at(intersection));
 
-    Vec3f to_camera(Vec3f(0, 0, 1) - r.at(t));
-    to_camera = to_camera.normalize();
+    Vec3f to_camera((Vec3f(0, 0, 1) - r.at(intersection)).normalize());
 
-    Vec3f light_ray(light.get_position() - r.at(t));
-    light_ray = light_ray.normalize();
+    Vec3f light_ray((light.get_position() - r.at(intersection)).normalize());
 
     Vec3f reflection_ray = (-1 * light_ray) - 2 * dot((-1 * light_ray), normal) * normal;
     reflection_ray = reflection_ray.normalize();
 
-    //TODO: reformat this
-    Ray rr(r.at(t) + 0.001 * normal, reflection_ray);
+    // TODO: reformat this
+    Ray rr(r.at(intersection) + 0.001 * normal, reflection_ray);
     std::vector<float> intersections;
     int hp = get_closest_intersection(spheres, rr, intersections);
     bool reflect = false;
     float reflect_shadow = 1;
     if (hp != -1) {
         reflect = true;
-        Ray rs(rr.at(intersections[hp]) + 0.001 * spheres[hp].get_normal_at(rr.at(intersections[hp])), light.get_position() - rr.at(intersections[hp]) + 0.001 * spheres[hp].get_normal_at(rr.at(intersections[hp])));
+        Ray rs(rr.at(intersections[hp]) + 0.001 * spheres[hp].get_normal_at(rr.at(intersections[hp])),
+               light.get_position() - rr.at(intersections[hp]) + 0.001 * spheres[hp].get_normal_at(rr.at(intersections[hp])));
         for (const auto& obj : spheres) {
             if (rs.has_intersection(obj) > 0.000001f) reflect_shadow = 0.35;
         }
@@ -119,7 +118,7 @@ Color get_color_at(Ray& r, const float& intersection, const Light& light, Sphere
     auto diffuse = (light.get_diffuse() * std::max(dot(light_ray, normal), 0.0f)) * light.get_color();
     auto specular = light.get_specular() * pow(std::max(dot(reflection_ray, to_camera), 0.0f), 32) * light.get_color();
 
-    Ray shadow_ray(r.at(t) + (0.001 * normal), light.get_position() - (r.at(t) + 0.001 * normal));
+    Ray shadow_ray(r.at(intersection) + (0.001 * normal), light.get_position() - (r.at(intersection) + 0.001 * normal));
     for (const auto& obj : spheres) {
         if (shadow_ray.has_intersection(obj) > 0.000001) shadow = 0.35;
     }
@@ -131,14 +130,13 @@ Color get_color_at(Ray& r, const float& intersection, const Light& light, Sphere
 }
 
 int main(int, char**) {
-    std::ofstream pbm_file;
-    pbm_file.open("img.ppm");
+    std::ofstream pbm_file("img.ppm");
     pbm_file << "P3"
              << "\n"
              << WIDTH << " " << HEIGHT << "\n"
              << "255\n";
 
-    Vec3f* frame_buffer = new Vec3f[WIDTH * HEIGHT];
+    std::vector<Vec3f> frame_buffer(WIDTH * HEIGHT);
     std::vector<std::string> mem_buffer;
 
     // sphere stretches when not at 0,0
@@ -148,22 +146,18 @@ int main(int, char**) {
     Sphere sphere4(1000, Vec3f(0, -1002, 0), Vec3f(0.5, 0.5, 0.5));
     Vec3f origin(0, 0, 1);
 
-    std::vector<Sphere> spheres;
-    spheres.push_back(sphere);
-    spheres.push_back(sphere2);
-    spheres.push_back(sphere3);
-    spheres.push_back(sphere4);
+    std::vector<Sphere> spheres{sphere, sphere2, sphere3, sphere4};
 
     Light light(Vec3f(1, 1, 1), Vec3f(1, 1, 1));
     light.set_light(.2, .5, .5);
 
-    auto start = std::chrono::steady_clock::now();
+    auto start = steady_clock::now();
     #pragma omp parallel for
     for (size_t j = 0; j < HEIGHT; j++) {
         for (size_t i = 0; i < WIDTH; i++) {
             Vec3f ij(2 * (float(i + 0.5) / (WIDTH - 1)) - 1, 1 - 2 * (float(j + 0.5) / (HEIGHT - 1)), -1);
-            Vec3f* dir = new Vec3f(ij - origin);
-            Ray r(origin, *dir);
+            Vec3f dir(ij - origin);
+            Ray r(origin, dir);
 
             std::vector<float> intersections;
 
@@ -176,10 +170,10 @@ int main(int, char**) {
             }
         }
     }
-    auto end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+    auto end = duration_cast<milliseconds>(steady_clock::now() - start).count();
     std::cout << ">> time (not incl. writing to file):  " << end << "ms" << std::endl;
 
-    start = std::chrono::steady_clock::now();
+    start = steady_clock::now();
     std::cout << ">> Saving Image..." << std::endl;
     for (size_t i = 0; i < WIDTH * HEIGHT; i++) {
         mem_buffer.push_back(std::to_string((int)frame_buffer[i].x_()) + " " + std::to_string((int)frame_buffer[i].y_()) + " " +
@@ -187,13 +181,12 @@ int main(int, char**) {
     }
     std::ostream_iterator<std::string> output_iterator(pbm_file, "\n");
     std::copy(mem_buffer.begin(), mem_buffer.end(), output_iterator);
-    auto new_end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
-    
+    auto new_end = duration_cast<milliseconds>(steady_clock::now() - start).count();
+
     std::cout << ">> Image: \"img.ppm\" saved!" << std::endl;
     std::cout << ">> time spent writing to file:       " << new_end << "ms" << std::endl;
     std::cout << ">> time (all):                       " << end + new_end << "ms" << std::endl;
 
-    delete frame_buffer;
     pbm_file.close();
     return EXIT_SUCCESS;
 }
