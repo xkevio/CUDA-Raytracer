@@ -10,7 +10,7 @@ class Light {
     Vec3f color;
 
    public:
-    __host__ __device__ Light(Vec3f position, Vec3f color) : position(position), color(color) {}
+    __host__ __device__ Light(const Vec3f& position, const Vec3f& color) : position(position), color(color) {}
     __host__ __device__ Vec3f get_position() const { return position; }
     __host__ __device__ Vec3f get_color() const { return color; }
 

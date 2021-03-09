@@ -16,6 +16,7 @@ const int OBJ_COUNT = 4;
 //const int MAX_THREADS_PER_BLOCK = 1024;
 
 using Color = Vec3f;
+using namespace std::chrono;
 
 struct Sphere {
     float radius;
@@ -24,7 +25,7 @@ struct Sphere {
 
     __host__ __device__ Sphere() {}
     __host__ __device__ Sphere(float r, const Vec3f &c, const Vec3f &col) : radius(r), center(c), color(col) {}
-    __host__ __device__ Vec3f get_normal_at(const Vec3f &at);
+    __host__ __device__ Vec3f get_normal_at(const Vec3f &at) const;
 };
 
 struct Ray {
@@ -33,15 +34,15 @@ struct Ray {
 
     __host__ __device__ Ray(const Vec3f &o, const Vec3f &d) : origin(o), dir(d) {}
 
-    __host__ __device__ Vec3f at(float t);
-    __host__ __device__ float has_intersection(const Sphere &sphere);
+    __host__ __device__ Vec3f at(float t) const;
+    __host__ __device__ float has_intersection(const Sphere &sphere) const;
 };
 
-__host__ __device__ Vec3f Sphere::get_normal_at(const Vec3f &at) {
+__host__ __device__ Vec3f Sphere::get_normal_at(const Vec3f &at) const {
     return Vec3f(at - center).normalize();
 }
 
-__host__ __device__ Vec3f Ray::at(float t) {
+__host__ __device__ Vec3f Ray::at(float t) const {
     return origin + (t * dir); 
 }
 
@@ -49,7 +50,7 @@ __host__ __device__ float dot(const Vec3f &a, const Vec3f &b) {
     return a.x_() * b.x_() + a.y_() * b.y_() + a.z_() * b.z_();
 }
 
-__host__ __device__ float Ray::has_intersection(const Sphere &sphere) {
+__host__ __device__ float Ray::has_intersection(const Sphere &sphere) const {
     auto a = dot(dir, dir);
     auto b = dot((2.0f * (dir)), (origin - sphere.center));
     auto c = dot((origin - sphere.center), (origin - sphere.center)) - pow(sphere.radius, 2);
@@ -66,7 +67,7 @@ __host__ __device__ float Ray::has_intersection(const Sphere &sphere) {
     return t0 < t1 ? t0 : t1;
 }
 
-__device__ float f_max(float a, float b) {
+__device__ constexpr float f_max(float a, float b) {
     return a > b ? a : b;
 }
 
@@ -74,7 +75,7 @@ __device__ Color convert_to_color(const Vec3f &v) {
     return Color(static_cast<int> (1 * ((v.x_()) * 255.999)), static_cast<int> (1 * ((v.y_()) * 255.999)), static_cast<int> (1 * ((v.z_()) * 255.999)));
 }
 
-__device__ int get_closest_intersection(Sphere* spheres, Ray &r, float* intersections) {
+__device__ int get_closest_intersection(Sphere* spheres, const Ray& r, float* intersections) {
     int hp = -1;
     for(int ii = 0; ii < OBJ_COUNT; ii++) {
         intersections[ii] = r.has_intersection(spheres[ii]);
@@ -98,22 +99,21 @@ __device__ int get_closest_intersection(Sphere* spheres, Ray &r, float* intersec
     return hp;
 }
 
-__device__ Color get_color_at(Ray &r, const float &intersection, Light* light, Sphere &sphere, Sphere* spheres, Vec3f* origin) {
-    auto t = intersection;
+__device__ Color get_color_at(const Ray &r, float intersection, Light* light, const Sphere &sphere, Sphere* spheres, Vec3f* origin) {
     float shadow = 1;
 
-    Vec3f normal = sphere.get_normal_at(r.at(t));
+    Vec3f normal = sphere.get_normal_at(r.at(intersection));
 
-    Vec3f to_camera(*origin - r.at(t));
+    Vec3f to_camera(*origin - r.at(intersection));
     to_camera = to_camera.normalize();
 
-    Vec3f light_ray(light->get_position() - r.at(t));
+    Vec3f light_ray(light->get_position() - r.at(intersection));
     light_ray = light_ray.normalize();
 
     Vec3f reflection_ray = (-1 * light_ray) - 2 * dot((-1 * light_ray), normal) * normal;
     reflection_ray = reflection_ray.normalize();
 
-    Ray rr(r.at(t) + 0.001 * normal, reflection_ray);
+    Ray rr(r.at(intersection) + 0.001 * normal, reflection_ray);
     float intersections[OBJ_COUNT];
     int hp = get_closest_intersection(spheres, rr, intersections);
     bool reflect = false;
@@ -130,7 +130,7 @@ __device__ Color get_color_at(Ray &r, const float &intersection, Light* light, S
     auto diffuse = (light->get_diffuse() * f_max(dot(light_ray, normal), 0.0f)) * light->get_color();
     auto specular = light->get_specular() * pow(f_max(dot(reflection_ray, to_camera), 0.0f), 32) * light->get_color();
 
-    Ray shadow_ray(r.at(t) + (0.001f * normal), light->get_position() - (r.at(t) + 0.001f * normal));
+    Ray shadow_ray(r.at(intersection) + (0.001f * normal), light->get_position() - (r.at(intersection) + 0.001f * normal));
     for(int i = 0; i < OBJ_COUNT; i++) {
         if(shadow_ray.has_intersection(spheres[i]) > 0.000001f) shadow = 0.35;
     }
@@ -218,6 +218,7 @@ int main(int, char**) {
 
     const int n = WIDTH * HEIGHT;
     int device_handle = 0;
+
     Vec3f* frame_buffer = new Vec3f[n];
     std::vector<std::string> mem_buffer;
 
@@ -246,17 +247,16 @@ int main(int, char**) {
     run_kernel(n, frame_buffer, spheres, light, origin);
     std::cout << ">> Finished kernel" << std::endl;
 
-    auto start = std::chrono::steady_clock::now();
+    auto start = steady_clock::now();
     std::cout << ">> Saving Image..." << std::endl;
 
-    for (size_t i = 0; i < n; i++)
-    {
+    for (size_t i = 0; i < n; i++) {
         mem_buffer.push_back(std::to_string((int) frame_buffer[i].x_()) + " " + std::to_string((int) frame_buffer[i].y_()) + " " + std::to_string((int) frame_buffer[i].z_()));
     }
     std::ostream_iterator<std::string> output_iterator(file, "\n");
     std::copy(mem_buffer.begin(), mem_buffer.end(), output_iterator);
 
-    auto end = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+    auto end = duration_cast<milliseconds>(steady_clock::now() - start).count();
     std::cout << ">> Finished writing to file in " << end << " ms" << std::endl;
     std::cout << "===========================================" << std::endl;
 

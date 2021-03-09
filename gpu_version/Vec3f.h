@@ -2,9 +2,8 @@
 #define __VEC3F_H__
 class Vec3f {
    public:
-    __host__ __device__ Vec3f(float x_, float y_, float z_);
-    __host__ __device__ Vec3f(const Vec3f& a);
-    __host__ __device__ Vec3f();
+    __host__ __device__ Vec3f(float x = 0, float y = 0, float z = 0) : x(x), y(y), z(z) {}
+
     __host__ __device__ Vec3f operator+(const Vec3f& a) const;
     __host__ __device__ Vec3f operator-(const Vec3f& a) const;
     __host__ __device__ Vec3f operator/(const float& a) const;
