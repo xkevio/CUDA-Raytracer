@@ -1,0 +1,10 @@
+.vscode/
+*.exe
+*.ppm
+*.png
+*.lib
+*.obj
+*.gch
+*.pdf
+*.zip
+*.exp
