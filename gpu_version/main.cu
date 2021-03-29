@@ -5,9 +5,9 @@
 #include <vector>
 #include <string>
 
-#include "cuda_util.h"
-#include "Vec3f.h"
-#include "Light.h"
+#include "cuda_util.cuh"
+#include "Vec3f.cuh"
+#include "Light.cuh"
 
 const int WIDTH = 2048;
 const int HEIGHT = 2048;

@@ -1,4 +1,4 @@
-#include "Vec3f.h"
+#include "Vec3f.cuh"
 
 #include <cmath>
 #include <iostream>
