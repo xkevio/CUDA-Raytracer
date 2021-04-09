@@ -1,7 +1,7 @@
 .vscode/
 *.exe
 *.ppm
-*.png
+/*.png
 *.lib
 *.obj
 *.gch
