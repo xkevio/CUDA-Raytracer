@@ -19,7 +19,7 @@ using namespace std::chrono;
 struct Sphere {
     float radius;
     Vec3f center;
-    Vec3f color;
+    Color color;
 
     Sphere(float r, const Vec3f& c, const Vec3f& col) : radius(r), center(c), color(col) {}
     Vec3f get_normal_at(const Vec3f& at) const;
@@ -38,8 +38,6 @@ struct Ray {
 Vec3f Sphere::get_normal_at(const Vec3f& at) const { return Vec3f(at - center).normalize(); }
 
 Vec3f Ray::at(float t) const { return origin + (t * dir); }
-
-float dot(const Vec3f& a, const Vec3f& b) { return a.x_() * b.x_() + a.y_() * b.y_() + a.z_() * b.z_(); }
 
 float Ray::has_intersection(const Sphere& sphere) const {
     auto a = dot(dir, dir);
@@ -84,7 +82,7 @@ int get_closest_intersection(const std::vector<Sphere>& spheres, const Ray& r, s
 }
 
 Color convert_to_color(const Vec3f& v) {
-    return Color(static_cast<int>(1 * ((v.x_()) * 255.999)), static_cast<int>(1 * ((v.y_()) * 255.999)), static_cast<int>(1 * ((v.z_()) * 255.999)));
+    return Color(static_cast<int>(1 * ((v.x()) * 255.999)), static_cast<int>(1 * ((v.y()) * 255.999)), static_cast<int>(1 * ((v.z()) * 255.999)));
 }
 
 Color get_color_at(const Ray& r, float intersection, const Light& light, const Sphere& sphere, const std::vector<Sphere>& spheres) {
@@ -176,8 +174,9 @@ int main(int, char**) {
     start = steady_clock::now();
     std::cout << ">> Saving Image..." << std::endl;
     for (size_t i = 0; i < WIDTH * HEIGHT; i++) {
-        mem_buffer.push_back(std::to_string((int)frame_buffer[i].x_()) + " " + std::to_string((int)frame_buffer[i].y_()) + " " +
-                             std::to_string((int)frame_buffer[i].z_()));
+        mem_buffer.push_back(std::to_string((int)frame_buffer[i].x()) + " " + 
+                             std::to_string((int)frame_buffer[i].y()) + " " +
+                             std::to_string((int)frame_buffer[i].z()));
     }
     std::ostream_iterator<std::string> output_iterator(pbm_file, "\n");
     std::copy(mem_buffer.begin(), mem_buffer.end(), output_iterator);
@@ -187,6 +186,5 @@ int main(int, char**) {
     std::cout << ">> time spent writing to file:       " << new_end << "ms" << std::endl;
     std::cout << ">> time (all):                       " << end + new_end << "ms" << std::endl;
 
-    pbm_file.close();
     return EXIT_SUCCESS;
 }

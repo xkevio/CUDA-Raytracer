@@ -11,8 +11,12 @@ class Light {
 
    public:
     constexpr Light(const Vec3f& position, const Vec3f& color) : position(position), color(color) {}
-    Vec3f get_position() const { return position; }
-    Vec3f get_color() const { return color; }
+    Vec3f get_position() const { 
+        return position; 
+    }
+    Vec3f get_color() const { 
+        return color; 
+    }
 
     void set_light(float amb, float diff, float spec) {
         ambient = amb;
@@ -20,7 +24,13 @@ class Light {
         specular = spec;
     }
 
-    float get_diffuse() const { return diffuse; }
-    float get_specular() const { return specular; }
-    float get_ambient() const { return ambient; }
+    float get_diffuse() const { 
+        return diffuse; 
+    }
+    float get_specular() const { 
+        return specular; 
+    }
+    float get_ambient() const { 
+        return ambient; 
+    }
 };
