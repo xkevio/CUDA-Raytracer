@@ -1,34 +1,33 @@
 #include "Vec3f.cuh"
 
 #include <cmath>
-#include <iostream>
 
-__host__ __device__ Vec3f Vec3f::operator+(const Vec3f &a) const {
-    return Vec3f(x + a.x, y + a.y, z + a.z);
+__host__ __device__ Vec3f Vec3f::operator+(const Vec3f& a) const {
+    return Vec3f(mx + a.mx, my + a.my, mz + a.mz);
 }
 
-__host__ __device__ Vec3f Vec3f::operator-(const Vec3f &a) const {
-    return Vec3f(x - a.x, y - a.y, z - a.z);
+__host__ __device__ Vec3f Vec3f::operator-(const Vec3f& a) const {
+    return Vec3f(mx - a.mx, my - a.my, mz - a.mz);
 }
 
-__host__ __device__ Vec3f Vec3f::operator/(const float &a) const {
+__host__ __device__ Vec3f Vec3f::operator/(float a) const {
     return scale(1 / a);
 }
 
-__host__ __device__ Vec3f operator*(const float &a, const Vec3f &b) {
-    return Vec3f(a * b.x_(), a * b.y_(), a * b.z_());
+__host__ __device__ Vec3f operator*(float a, const Vec3f& b) {
+    return Vec3f(a * b.x(), a * b.y(), a * b.z());
 }
 
-__host__ __device__ Vec3f Vec3f::operator^(const Vec3f &a) const {
-    return Vec3f(y*a.z - z*a.y, z*a.x - x*a.z, x*a.y - y*a.x);
+__host__ __device__ Vec3f operator*(const Vec3f& b, float a) {
+    return a * b;
 }
 
-__host__ __device__ Vec3f Vec3f::operator&(const Vec3f &a) const {
-    return Vec3f(x * a.x, y * a.y, z * a.z);
+__host__ __device__ Vec3f Vec3f::operator&(const Vec3f& a) const {
+    return Vec3f(mx * a.mx, my * a.my, mz * a.mz);
 }
 
 __host__ __device__ Vec3f Vec3f::scale(float factor) const {
-    return Vec3f(factor * x, factor * y, factor * z);
+    return Vec3f(factor * mx, factor * my, factor * mz);
 }
 
 __host__ __device__ Vec3f Vec3f::normalize() const {
@@ -36,23 +35,42 @@ __host__ __device__ Vec3f Vec3f::normalize() const {
 }
 
 __host__ __device__ Vec3f Vec3f::cap(float max) const {
-    float nx = x;
-    float ny = y;
-    float nz = z;
-    if(x > max) nx = max;
-    if(y > max) ny = max;
-    if(z > max) nz = max;
+    float nx = mx;
+    float ny = my;
+    float nz = mz;
+    if(mx > max) nx = max;
+    if(my > max) ny = max;
+    if(mz > max) nz = max;
     return Vec3f(nx, ny, nz);
 }
 
 __host__ __device__ float Vec3f::length() const {
-    return sqrt(pow(x, 2) + pow(y,2) + pow(z, 2));
+    return std::sqrt(mx*mx + my*my + mz*mz);
 }
 
-__host__ __device__ void Vec3f::display() {
-    printf("(%f %f %f)^T\n", x, y, z);
+__host__ __device__ float Vec3f::x() const { 
+    return mx; 
 }
 
-__host__ __device__ float Vec3f::x_() const { return x; }
-__host__ __device__ float Vec3f::y_() const { return y; }
-__host__ __device__ float Vec3f::z_() const { return z; }
+__host__ __device__ float Vec3f::y() const { 
+    return my; 
+}
+
+__host__ __device__ float Vec3f::z() const { 
+    return mz; 
+}
+
+__host__ __device__ Vec3f cross(const Vec3f &a, const Vec3f& b) {
+    return Vec3f(a.y() * b.z() - a.z() * b.y(), 
+                 a.z() * b.x() - a.x() * b.z(), 
+                 a.x() * b.y() - a.y() * b.x());
+}
+
+__host__ __device__ std::ostream& operator<<(std::ostream& os, const Vec3f& a) {
+    os << "(" << a.x() << " " << a.y() << " " << a.z() << ")";
+    return os;
+}
+
+__host__ __device__ float dot(const Vec3f& a, const Vec3f& b) {
+    return a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
+}

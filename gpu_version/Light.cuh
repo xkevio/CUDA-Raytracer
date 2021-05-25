@@ -1,3 +1,6 @@
+#ifndef __LIGHT_CUH__
+#define __LIGHT_CUH__
+
 #include "Vec3f.cuh"
 
 class Light {
@@ -11,8 +14,12 @@ class Light {
 
    public:
     __host__ __device__ Light(const Vec3f& position, const Vec3f& color) : position(position), color(color) {}
-    __host__ __device__ Vec3f get_position() const { return position; }
-    __host__ __device__ Vec3f get_color() const { return color; }
+    __host__ __device__ Vec3f get_position() const { 
+        return position; 
+    }
+    __host__ __device__ Vec3f get_color() const { 
+        return color; 
+    }
 
     __host__ __device__ void set_light(float amb, float diff, float spec) {
         diffuse = diff;
@@ -20,7 +27,15 @@ class Light {
         ambient = amb;
     }
 
-    __host__ __device__ float get_diffuse() const { return diffuse; }
-    __host__ __device__ float get_specular() const { return specular; }
-    __host__ __device__ float get_ambient() const { return ambient; }
+    __host__ __device__ float get_diffuse() const { 
+        return diffuse; 
+    }
+    __host__ __device__ float get_specular() const { 
+        return specular; 
+    }
+    __host__ __device__ float get_ambient() const { 
+        return ambient; 
+    }
 };
+
+#endif

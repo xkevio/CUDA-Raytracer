@@ -23,7 +23,7 @@ using namespace std::chrono;
 struct Sphere {
     float radius;
     Vec3f center;
-    Vec3f color;
+    Color color;
 
     __host__ __device__ Sphere() {}
     __host__ __device__ Sphere(float r, const Vec3f &c, const Vec3f &col) : radius(r), center(c), color(col) {}
@@ -40,7 +40,7 @@ struct Ray {
     __host__ __device__ float has_intersection(const Sphere &sphere) const;
 };
 
-__host__ __device__ Vec3f Sphere::get_normal_at(const Vec3f &at) const {
+__host__ __device__ Vec3f Sphere::get_normal_at(const Vec3f& at) const {
     return Vec3f(at - center).normalize();
 }
 
@@ -48,11 +48,7 @@ __host__ __device__ Vec3f Ray::at(float t) const {
     return origin + (t * dir); 
 }
 
-__host__ __device__ float dot(const Vec3f &a, const Vec3f &b) {
-    return a.x_() * b.x_() + a.y_() * b.y_() + a.z_() * b.z_();
-}
-
-__host__ __device__ float Ray::has_intersection(const Sphere &sphere) const {
+__host__ __device__ float Ray::has_intersection(const Sphere& sphere) const {
     auto a = dot(dir, dir);
     auto b = dot((2.0f * (dir)), (origin - sphere.center));
     auto c = dot((origin - sphere.center), (origin - sphere.center)) - pow(sphere.radius, 2);
@@ -60,8 +56,8 @@ __host__ __device__ float Ray::has_intersection(const Sphere &sphere) const {
     auto d = b*b - 4 * (a * c);
     if(d < 0) return -1.0;
 
-    float t0 = ((-b - sqrt(d)) / (2*a));
-    float t1 = ((-b + sqrt(d)) / (2*a));
+    float t0 = ((-b - std::sqrt(d)) / (2*a));
+    float t1 = ((-b + std::sqrt(d)) / (2*a));
     if(d == 0) return t0;
     if(t0 < 0 && t1 < 0) return -1;
     if(t0 > 0 && t1 < 0) return t0;
@@ -73,8 +69,8 @@ __device__ constexpr float f_max(float a, float b) {
     return a > b ? a : b;
 }
 
-__device__ Color convert_to_color(const Vec3f &v) {
-    return Color(static_cast<int> (1 * ((v.x_()) * 255.999)), static_cast<int> (1 * ((v.y_()) * 255.999)), static_cast<int> (1 * ((v.z_()) * 255.999)));
+__device__ Color convert_to_color(const Vec3f& v) {
+    return Color(static_cast<int>(1 * ((v.x()) * 255.999)), static_cast<int>(1 * ((v.y()) * 255.999)), static_cast<int>(1 * ((v.z()) * 255.999)));
 }
 
 __device__ int get_closest_intersection(Sphere* spheres, const Ray& r, float* intersections) {
@@ -120,11 +116,11 @@ __device__ Color get_color_at(const Ray &r, float intersection, Light* light, co
     int hp = get_closest_intersection(spheres, rr, intersections);
     bool reflect = false;
     float reflect_shadow = 1;
-    if(hp != -1) {
+    if (hp != -1) {
         reflect = true;
         Ray rs(rr.at(intersections[hp]) + 0.001 * spheres[hp].get_normal_at(rr.at(intersections[hp])), light->get_position() - rr.at(intersections[hp]) + 0.001 * spheres[hp].get_normal_at(rr.at(intersections[hp])));
-        for(int i = 0; i < OBJ_COUNT; i++) {
-            if(rs.has_intersection(spheres[i]) > 0.000001f) reflect_shadow = 0.35;
+        for (int i = 0; i < OBJ_COUNT; ++i) {
+            if (rs.has_intersection(spheres[i]) > 0.000001f) reflect_shadow = 0.35;
         }
     }
 
@@ -133,11 +129,12 @@ __device__ Color get_color_at(const Ray &r, float intersection, Light* light, co
     auto specular = light->get_specular() * pow(f_max(dot(reflection_ray, to_camera), 0.0f), 32) * light->get_color();
 
     Ray shadow_ray(r.at(intersection) + (0.001f * normal), light->get_position() - (r.at(intersection) + 0.001f * normal));
-    for(int i = 0; i < OBJ_COUNT; i++) {
-        if(shadow_ray.has_intersection(spheres[i]) > 0.000001f) shadow = 0.35;
+    for (int i = 0; i < OBJ_COUNT; ++i) {
+        if (shadow_ray.has_intersection(spheres[i]) > 0.000001f) shadow = 0.35;
     }
 
-    auto all_light = reflect ? (ambient + diffuse + specular).cap(1) & (0.55 * (sphere.color - (reflect_shadow * spheres[hp].color)) + (reflect_shadow * spheres[hp].color)).cap(1) : (ambient + diffuse + specular).cap(1) & sphere.color;
+    auto all_light = reflect ? (ambient + diffuse + specular).cap(1) & (0.55 * (sphere.color - (reflect_shadow * spheres[hp].color)) + (reflect_shadow * spheres[hp].color)).cap(1)
+                             : (ambient + diffuse + specular).cap(1) & sphere.color;
     return convert_to_color(shadow * all_light);
 }
 
@@ -253,7 +250,9 @@ int main(int, char**) {
 
     file << "P3" << "\n" << WIDTH << " " << HEIGHT << "\n" << "255\n";
     for (std::size_t i = 0; i < n; ++i) {
-        mem_buffer.push_back(std::to_string((int) frame_buffer[i].x_()) + " " + std::to_string((int) frame_buffer[i].y_()) + " " + std::to_string((int) frame_buffer[i].z_()));
+        mem_buffer.push_back(std::to_string((int) frame_buffer[i].x()) + " " + 
+                             std::to_string((int) frame_buffer[i].y()) + " " + 
+                             std::to_string((int) frame_buffer[i].z()));
     }
     std::ostream_iterator<std::string> output_iterator(file, "\n");
     std::copy(mem_buffer.begin(), mem_buffer.end(), output_iterator);
