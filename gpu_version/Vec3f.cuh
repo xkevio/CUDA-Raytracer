@@ -30,7 +30,7 @@ class Vec3f {
 __host__ __device__ Vec3f operator*(float a, const Vec3f& b);
 __host__ __device__ Vec3f operator*(const Vec3f& b, float a);
 
-__host__ __device__ Vec3f cross(const Vec3f &a, const Vec3f& b);
+__host__ __device__ Vec3f cross(const Vec3f& a, const Vec3f& b);
 __host__ __device__ std::ostream& operator<<(std::ostream& os, const Vec3f& a);
 __host__ __device__ float dot(const Vec3f& a, const Vec3f& b);
 
