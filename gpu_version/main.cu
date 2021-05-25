@@ -1,6 +1,8 @@
 #include <iostream>
+#include <iterator>
 #include <fstream>
 #include <cmath>
+#include <cstdint>
 #include <chrono>
 #include <vector>
 #include <string>
@@ -214,7 +216,6 @@ void run_kernel(const int size, Vec3f* fb, Sphere* spheres, Light* light, Vec3f*
 
 int main(int, char**) {
     std::ofstream file("img.ppm");
-    file << "P3" << "\n" << WIDTH << " " << HEIGHT << "\n" << "255\n";
 
     const int n = WIDTH * HEIGHT;
     int device_handle = 0;
@@ -250,7 +251,8 @@ int main(int, char**) {
     auto start = steady_clock::now();
     std::cout << ">> Saving Image..." << std::endl;
 
-    for (size_t i = 0; i < n; i++) {
+    file << "P3" << "\n" << WIDTH << " " << HEIGHT << "\n" << "255\n";
+    for (std::size_t i = 0; i < n; ++i) {
         mem_buffer.push_back(std::to_string((int) frame_buffer[i].x_()) + " " + std::to_string((int) frame_buffer[i].y_()) + " " + std::to_string((int) frame_buffer[i].z_()));
     }
     std::ostream_iterator<std::string> output_iterator(file, "\n");
@@ -260,7 +262,6 @@ int main(int, char**) {
     std::cout << ">> Finished writing to file in " << end << " ms" << std::endl;
     std::cout << "===========================================" << std::endl;
 
-    file.close();
     delete[] frame_buffer;
     delete origin;
     delete light;
