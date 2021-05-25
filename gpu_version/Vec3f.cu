@@ -14,14 +14,6 @@ __host__ __device__ Vec3f Vec3f::operator/(float a) const {
     return scale(1 / a);
 }
 
-__host__ __device__ Vec3f operator*(float a, const Vec3f& b) {
-    return Vec3f(a * b.x(), a * b.y(), a * b.z());
-}
-
-__host__ __device__ Vec3f operator*(const Vec3f& b, float a) {
-    return a * b;
-}
-
 __host__ __device__ Vec3f Vec3f::operator&(const Vec3f& a) const {
     return Vec3f(mx * a.mx, my * a.my, mz * a.mz);
 }
@@ -58,6 +50,16 @@ __host__ __device__ float Vec3f::y() const {
 
 __host__ __device__ float Vec3f::z() const { 
     return mz; 
+}
+
+// free functions
+
+__host__ __device__ Vec3f operator*(float a, const Vec3f& b) {
+    return Vec3f(a * b.x(), a * b.y(), a * b.z());
+}
+
+__host__ __device__ Vec3f operator*(const Vec3f& b, float a) {
+    return a * b;
 }
 
 __host__ __device__ Vec3f cross(const Vec3f &a, const Vec3f& b) {
