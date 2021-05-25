@@ -8,10 +8,18 @@ class Vec3f {
    public:
     constexpr Vec3f(float x = 0, float y = 0, float z = 0) noexcept : mx(x), my(y), mz(z) {}
 
-    Vec3f operator+(const Vec3f& a) const;
-    Vec3f operator-(const Vec3f& a) const;
-    Vec3f operator/(float a) const;
-    Vec3f operator&(const Vec3f& a) const;  // element wise multiplication
+    Vec3f operator+(const Vec3f& a) const {
+        return Vec3f(mx + a.mx, my + a.my, mz + a.mz);
+    }
+    Vec3f operator-(const Vec3f& a) const {
+        return Vec3f(mx - a.mx, my - a.my, mz - a.mz);
+    }
+    Vec3f operator/(float a) const {
+        return scale(1 / a);
+    }
+    Vec3f operator&(const Vec3f& a) const {
+        return Vec3f(mx * a.mx, my * a.my, mz * a.mz);
+    }  // element wise multiplication
 
     constexpr float length() const {
         return std::sqrt(mx*mx + my*my + mz*mz);
