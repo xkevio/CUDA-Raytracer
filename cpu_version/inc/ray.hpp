@@ -3,8 +3,8 @@
 
 #include <optional>
 #include <vector>
-#include "Vec3f.hpp"
-#include "Sphere.hpp"
+#include "vec3f.hpp"
+#include "sphere.hpp"
 
 struct Ray {
     Vec3f origin;

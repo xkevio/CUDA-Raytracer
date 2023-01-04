@@ -1,7 +1,7 @@
 #ifndef LIGHT_HPP
 #define LIGHT_HPP
 
-#include "Vec3f.hpp"
+#include "vec3f.hpp"
 
 class Light {
    private:

@@ -1,7 +1,7 @@
 #ifndef CUDA_RAYTRACER_SPHERE_HPP
 #define CUDA_RAYTRACER_SPHERE_HPP
 
-#include "Vec3f.hpp"
+#include "vec3f.hpp"
 
 struct Sphere {
     float radius;

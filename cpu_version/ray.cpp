@@ -1,6 +1,6 @@
 #include <algorithm>
-#include "inc/Ray.hpp"
-#include "inc/Sphere.hpp"
+#include "inc/ray.hpp"
+#include "inc/sphere.hpp"
 
 Vec3f Ray::at(float t) const {
     return this->origin + (t * this->dir);

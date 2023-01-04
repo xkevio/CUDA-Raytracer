@@ -6,9 +6,9 @@ find_package(OpenMP)
 
 add_executable(CUDA_Raytracer
         cpu_version/main.cpp
-        cpu_version/Color.cpp
-        cpu_version/Ray.cpp
-        cpu_version/Sphere.cpp)
+        cpu_version/color.cpp
+        cpu_version/ray.cpp
+        cpu_version/sphere.cpp)
 
 target_link_libraries(CUDA_Raytracer PRIVATE OpenMP::OpenMP_CXX)
 target_include_directories(CUDA_Raytracer PRIVATE cpu_version/inc)

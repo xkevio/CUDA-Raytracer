@@ -2,10 +2,10 @@
 #define CUDA_RAYTRACER_COLOR_HPP
 
 #include <vector>
-#include "Vec3f.hpp"
-#include "Light.hpp"
-#include "Sphere.hpp"
-#include "Ray.hpp"
+#include "vec3f.hpp"
+#include "light.hpp"
+#include "sphere.hpp"
+#include "ray.hpp"
 
 namespace color_util {
     constexpr Color BG_COLOR = { 94, 156, 255 };

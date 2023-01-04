@@ -1,5 +1,5 @@
 #include <algorithm>
-#include "inc/Color.hpp"
+#include "inc/color.hpp"
 
 namespace color_util {
     Color convert_to_color(const Vec3f& v) {

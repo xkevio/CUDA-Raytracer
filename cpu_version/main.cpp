@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-#include "inc/Light.hpp"
-#include "inc/Vec3f.hpp"
-#include "inc/Color.hpp"
+#include "inc/light.hpp"
+#include "inc/vec3f.hpp"
+#include "inc/color.hpp"
 
 using namespace std::chrono;
 
