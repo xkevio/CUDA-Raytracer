@@ -1,6 +1,8 @@
 # CUDA-Raytracer
 A simple ray tracer written with CUDA that saves its output in a .ppm file, CPU version included for reference. Below, you can find the rendered image and a performance analysis.
 
+This was made as a final project for the GPU programming course at Otto-von-Guericke University Magdeburg.
+
 ## The Render
 The code currently generates the following image, though it does support more spheres and light sources:
 
